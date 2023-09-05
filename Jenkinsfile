@@ -47,16 +47,17 @@ pipeline {
         //         }
         // }
         stage('Compile and Run Sonar Analysis') {
-            def scannerHome = tool 'SonarQube';
+            environment {
+                scannerHome = tool 'SonarQube'
+            }
             steps {
                 script {
+                    withSonarQubeEnv('SonarQube') {
                     try {
                         if (fileExists('pom.xml')) {
                             sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=bwa -Dsonar.organization=bwa -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=89b294d895aa5348e3434a5cfb85dd6320aebc72'
                         } else if (fileExists('package.json')) {
-                            withSonarQubeEnv('SonarQube') {
-                               sh "${scannerHome}/bin/sonar-scanner"
-                            }        // Run SonarCloud analysis for Node.js application
+                               sh "${scannerHome}/bin/sonar-scanner"    // Run SonarCloud analysis for Node.js application
                         } else if (fileExists('go.mod')) {
                             sh 'go mod download'
                             sh 'sonar-scanner' // Run SonarCloud analysis for Go application
@@ -75,6 +76,7 @@ pipeline {
                         error("Error during Sonar analysis: ${e.message}")
                     }
                 }
+            }
             }
         }
         stage('RunSCAAnalysisUsingSnyk') {
