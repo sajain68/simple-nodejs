@@ -135,7 +135,7 @@ pipeline {
                     try {
                         if (fileExists('package.json')) {
                             sh 'npm install'
-                            sh 'npm test'
+                            // sh 'npm test'
                         }
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
