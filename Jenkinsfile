@@ -270,7 +270,7 @@ pipeline {
             steps {
                 script {
                     try {
-                        if (fileExists('package.json')) {
+                        if (fileExists('vue.config.js')) {
                             sh 'npm install'
                             sh 'npm run test' // Assuming the Vue.js app has tests
                         }
