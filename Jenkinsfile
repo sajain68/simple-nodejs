@@ -50,7 +50,7 @@ pipeline {
                         if (fileExists('pom.xml')) {
                             sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=bwa -Dsonar.organization=bwa -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=89b294d895aa5348e3434a5cfb85dd6320aebc72'
                         } else if (fileExists('package.json')) {
-                            withSonarQubeEnv('SonarQube', envOnly: true) {
+                            withSonarQubeEnv('SonarQube') {
                                 println ${env.SONAR_HOST_URL}
                                // sh "${scannerHome}/bin/sonar-scanner"
                             }        // Run SonarCloud analysis for Node.js application
