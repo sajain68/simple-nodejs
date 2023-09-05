@@ -40,35 +40,39 @@ pipeline {
                 }
             }
         }
-        // stage('Compile and Run Sonar Analysis') {
-        //     steps {
-        //         script {
-        //             try {
-        //                 if (fileExists('pom.xml')) {
-        //                     sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=bwa -Dsonar.organization=bwa -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=89b294d895aa5348e3434a5cfb85dd6320aebc72'
-        //                 } else if (fileExists('package.json')) {
-        //                     sh 'npm install -g sonarqube-scanner'
-        //                     sh 'sonar-scanner' // Run SonarCloud analysis for Node.js application
-        //                 } else if (fileExists('go.mod')) {
-        //                     sh 'go mod download'
-        //                     sh 'sonar-scanner' // Run SonarCloud analysis for Go application
-        //                 } else if (fileExists('Gemfile')) {
-        //                     sh 'bundle install'
-        //                     sh 'sonar-scanner' // Run SonarCloud analysis for Ruby application
-        //                 } else if (fileExists('requirements.txt')) {
-        //                     sh 'pip install -r requirements.txt'
-        //                     sh 'sonar-scanner' // Run SonarCloud analysis for Python application
-        //                 } else {
-        //                     currentBuild.result = 'FAILURE'
-        //                     error("Unsupported application type: No compatible build steps available.")
-        //                 }
-        //             } catch (Exception e) {
-        //                 currentBuild.result = 'FAILURE'
-        //                 error("Error during Sonar analysis: ${e.message}")
-        //             }
-        //         }
-        //     }
-        // }
+        stage('Compile and Run Sonar Analysis') {
+            environment {
+                scannerHome = tool 'SonarQube'
+            }
+            steps {
+                script {
+                    try {
+                        if (fileExists('pom.xml')) {
+                            sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=bwa -Dsonar.organization=bwa -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=89b294d895aa5348e3434a5cfb85dd6320aebc72'
+                        } else if (fileExists('package.json')) {
+                            withSonarQubeEnv('sonarqube') {
+                                sh "${scannerHome}/bin/sonar-scanner"
+                            }        // Run SonarCloud analysis for Node.js application
+                        } else if (fileExists('go.mod')) {
+                            sh 'go mod download'
+                            sh 'sonar-scanner' // Run SonarCloud analysis for Go application
+                        } else if (fileExists('Gemfile')) {
+                            sh 'bundle install'
+                            sh 'sonar-scanner' // Run SonarCloud analysis for Ruby application
+                        } else if (fileExists('requirements.txt')) {
+                            sh 'pip install -r requirements.txt'
+                            sh 'sonar-scanner' // Run SonarCloud analysis for Python application
+                        } else {
+                            currentBuild.result = 'FAILURE'
+                            error("Unsupported application type: No compatible build steps available.")
+                        }
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        error("Error during Sonar analysis: ${e.message}")
+                    }
+                }
+            }
+        }
         stage('RunSCAAnalysisUsingSnyk') {
             steps {
                 script {
