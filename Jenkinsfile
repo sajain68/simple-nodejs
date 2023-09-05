@@ -40,45 +40,42 @@ pipeline {
                 }
             }
         }
-        // stage('SonarQube analysis') {
-        //     def scannerHome = tool 'SonarQube';
-        //     withSonarQubeEnv('SonarQube') { // If you have configured more than one global server connection, you can specify its name
-        //         sh "${scannerHome}/bin/sonar-scanner"
-        //         }
-        // }
-        // stage('Compile and Run Sonar Analysis') {
-        //     environment {
-        //         scannerHome = tool 'SonarQube'
-        //     }
-        //     steps {
-        //         script {
-        //             withSonarQubeEnv('SonarQube') {
-        //             try {
-        //                 if (fileExists('pom.xml')) {
-        //                     sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=bwa -Dsonar.organization=bwa -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=89b294d895aa5348e3434a5cfb85dd6320aebc72'
-        //                 } else if (fileExists('package.json')) {
-        //                        sh "${scannerHome}/bin/sonar-scanner"    // Run SonarCloud analysis for Node.js application
-        //                 } else if (fileExists('go.mod')) {
-        //                     sh 'go mod download'
-        //                     sh "${scannerHome}/bin/sonar-scanner" // Run SonarCloud analysis for Go application
-        //                 } else if (fileExists('Gemfile')) {
-        //                     sh 'bundle install'
-        //                     sh "${scannerHome}/bin/sonar-scanner" // Run SonarCloud analysis for Ruby application
-        //                 } else if (fileExists('requirements.txt')) {
-        //                     sh 'pip install -r requirements.txt'
-        //                     sh "${scannerHome}/bin/sonar-scanner" // Run SonarCloud analysis for Python application
-        //                 } else {
-        //                     currentBuild.result = 'FAILURE'
-        //                     error("Unsupported application type: No compatible build steps available.")
-        //                 }
-        //             } catch (Exception e) {
-        //                 currentBuild.result = 'FAILURE'
-        //                 error("Error during Sonar analysis: ${e.message}")
-        //             }
-        //         }
-        //     }
-        //     }
-        // }
+        stage('Compile and Run Sonar Analysis') {
+            steps {
+                script {
+                    try {
+                        if (fileExists('pom.xml')) {
+                            sh 'mvn clean verify sonar:sonar -Dsonar.projectKey=bwa -Dsonar.organization=bwa -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=89b294d895aa5348e3434a5cfb85dd6320aebc72'
+                        } else if (fileExists('package.json')) {
+                            sh 'npm install -g sonarqube-scanner'
+                            sh 'npm run sonar-scanner' // Run SonarCloud analysis for Node.js application
+                        } else if (fileExists('go.mod')) {
+                            sh 'go mod download'
+                            sh 'sonar-scanner' // Run SonarCloud analysis for Go application
+                        } else if (fileExists('Gemfile')) {
+                            sh 'bundle install'
+                            sh 'sonar-scanner' // Run SonarCloud analysis for Ruby application
+                        } else if (fileExists('requirements.txt')) {
+                            sh 'pip install -r requirements.txt'
+                            sh 'sonar-scanner' // Run SonarCloud analysis for Python application
+                        } else if (fileExists('Discusslt.sln')) {
+                            def scannerHome = tool 'SonarQube MSBuild'
+                            withSonarQubeEnv('SonarQube') {
+                                bat "dotnet ${scannerHome}\\SonarScanner.MSBuild.dll begin /k:\"Dotnet-project\""
+                                bat "dotnet build"
+                                bat "dotnet ${scannerHome}\\SonarScanner.MSBuild.dll end"
+                            }
+                        } else {
+                            currentBuild.result = 'FAILURE'
+                            error("Unsupported application type: No compatible build steps available.")
+                        }
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        error("Error during Sonar analysis: ${e.message}")
+                    }
+                }
+            }
+        }
         stage('RunSCAAnalysisUsingSnyk') {
             steps {
                 script {
