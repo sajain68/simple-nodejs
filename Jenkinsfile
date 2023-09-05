@@ -3,18 +3,18 @@ pipeline {
     tools {
         maven 'Maven_3_5_2'
         nodejs 'NodeJS_14'
-        go 'Go_1_17'
-        ruby 'Ruby_3_0'
-        python 'Python_3_9'
-        dockerTool 'Docker_20_10_8'
-        kubectl 'kubectl_1_21_4'
-        awsCli 'AWS_Cli_2_2_22'
-        terraform 'Terraform_1_0_9'
-        git 'Git_2_33_0'
-        androidSdk 'Android_SDK'
-        xcode 'Xcode_12'
-        ruby 'Ruby_3_0'
-        nodejs 'NodeJS_14'
+        // go 'Go_1_17'
+        // ruby 'Ruby_3_0'
+        // python 'Python_3_9'
+        // dockerTool 'Docker_20_10_8'
+        // kubectl 'kubectl_1_21_4'
+        // awsCli 'AWS_Cli_2_2_22'
+        // terraform 'Terraform_1_0_9'
+        // git 'Git_2_33_0'
+        // androidSdk 'Android_SDK'
+        // xcode 'Xcode_12'
+        // ruby 'Ruby_3_0'
+        // nodejs 'NodeJS_14'
         // Add More tools as needed
     }
     stages {
@@ -27,12 +27,12 @@ pipeline {
             steps {
                 script {
                     try {
-                        // Function to detect Java version
-                        def javaVersion = detectJavaVersion()
+                        // // Function to detect Java version
+                        // def javaVersion = detectJavaVersion()
 
-                        // Set the Java version for the pipeline
-                        env.JAVA_HOME = javaVersion
-                        tool name: "Java_${javaVersion}", type: 'jdk'
+                        // // Set the Java version for the pipeline
+                        // env.JAVA_HOME = javaVersion
+                        tool name: "Java", type: 'jdk'
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
                         error("Error during Java version detection: ${e.message}")
@@ -74,7 +74,8 @@ pipeline {
                 script {
                     try {
                         withCredentials([string(credentialsId: 'SNYK_TOKEN', variable: 'SNYK_TOKEN')]) {
-                            sh 'mvn snyk:test -fn'
+                            sh 'npm install -g snyk'
+                            sh 'snyk code test --all-projects'
                         }
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
